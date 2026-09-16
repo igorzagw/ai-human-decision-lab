@@ -12,21 +12,19 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:        #0B1120;
-    --bg-deep:   #070C17;
-    --surface:   #121B2E;
-    --surface-2: #18243C;
-    --border:    #1F2D47;
-    --border-lit:#2C3E5E;
-    --text:      #E6EDF7;
-    --muted:     #8A9BB8;
-    --faint:     #5C6E8C;
-    --accent:    #3B82F6;
-    --amber:     #F5B942;
-    --green:     #34D399;
-    --red:       #F87171;
-    --violet:    #A78BFA;
-    --radius:    14px;
+    /* Палітра свідомо бідна: один акцент і три відтінки тексту.
+       Колір лишився тільки там, де він щось означає — статус або результат. */
+    --bg:        #101216;
+    --surface:   #171A1F;
+    --border:    #262A31;
+    --text:      #E6E8EB;
+    --muted:     #9BA1AA;
+    --faint:     #6B7280;
+    --accent:    #5B93F0;
+    --green:     #5FB98C;
+    --red:       #DE7A76;
+    --amber:     #CFA04A;
+    --radius:    10px;
     --font:      'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --mono:      'JetBrains Mono', ui-monospace, 'Cascadia Code', Consolas, monospace;
   }
@@ -50,111 +48,72 @@
     display: grid;
     place-items: center;
     padding: 24px;
-    position: relative;
-    overflow: hidden;
   }
-
-  /* Дві м'які світлові плями замість пласкої заливки: дають глибину,
-     але не відволікають від форми. */
-  #gate::before,
-  #gate::after {
-    content: '';
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(120px);
-    opacity: .35;
-    pointer-events: none;
-  }
-  #gate::before { width: 520px; height: 520px; background: #1E40AF; top: -180px; left: -140px; }
-  #gate::after  { width: 460px; height: 460px; background: #92600E; bottom: -200px; right: -120px; }
 
   .gate-card {
-    position: relative;
-    z-index: 1;
     width: 100%;
-    max-width: 420px;
-    background: rgba(18, 27, 46, .88);
-    backdrop-filter: blur(12px);
+    max-width: 380px;
     border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 36px 32px 30px;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, .5);
+    border-radius: 12px;
+    padding: 30px 28px 26px;
   }
 
   .gate-mark {
-    width: 46px;
-    height: 46px;
+    width: 34px;
+    height: 34px;
     display: grid;
     place-items: center;
-    border-radius: 12px;
-    background: linear-gradient(140deg, var(--accent), var(--violet));
-    margin-bottom: 20px;
-  }
-  .gate-mark svg { width: 24px; height: 24px; stroke: #fff; fill: none; stroke-width: 2; }
-
-  .gate-card h1 {
-    font-size: 21px;
-    font-weight: 600;
-    margin: 0 0 6px;
-    letter-spacing: -.02em;
-  }
-
-  .gate-sub {
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    margin-bottom: 18px;
     color: var(--muted);
-    font-size: 13.5px;
-    margin: 0 0 26px;
   }
+  .gate-mark svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+
+  .gate-card h1 { font-size: 18px; font-weight: 600; margin: 0 0 5px; letter-spacing: -.01em; }
+  .gate-sub { color: var(--muted); font-size: 13px; margin: 0 0 24px; }
 
   .field { margin-bottom: 14px; }
-
   .field label {
     display: block;
     font-size: 12px;
-    font-weight: 500;
     color: var(--muted);
-    margin-bottom: 7px;
-    text-transform: uppercase;
-    letter-spacing: .06em;
+    margin-bottom: 6px;
   }
 
   input[type="password"] {
     width: 100%;
-    padding: 12px 14px;
-    background: var(--bg-deep);
-    border: 1px solid var(--border-lit);
-    border-radius: 10px;
+    padding: 10px 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
     color: var(--text);
     font-family: var(--font);
-    font-size: 15px;
+    font-size: 14px;
     outline: none;
-    transition: border-color .15s, box-shadow .15s;
+    transition: border-color .15s;
   }
-  input[type="password"]:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, .18);
-  }
+  input[type="password"]:focus { border-color: var(--accent); }
 
   .btn-primary {
     width: 100%;
-    padding: 12px;
+    padding: 10px;
     border: 0;
-    border-radius: 10px;
+    border-radius: 8px;
     background: var(--accent);
     color: #fff;
     font-family: var(--font);
-    font-size: 14.5px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 500;
     cursor: pointer;
-    transition: background .15s, transform .08s;
   }
-  .btn-primary:hover:not(:disabled) { background: #2563EB; }
-  .btn-primary:active:not(:disabled) { transform: translateY(1px); }
-  .btn-primary:disabled { opacity: .55; cursor: progress; }
+  .btn-primary:hover:not(:disabled) { background: #4A80DC; }
+  .btn-primary:disabled { opacity: .5; cursor: progress; }
 
   .gate-msg {
-    margin-top: 14px;
-    font-size: 13px;
-    min-height: 20px;
+    margin-top: 12px;
+    font-size: 12.5px;
+    min-height: 18px;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -163,8 +122,8 @@
   .gate-msg.work  { color: var(--muted); }
 
   .spinner {
-    width: 13px; height: 13px;
-    border: 2px solid var(--border-lit);
+    width: 12px; height: 12px;
+    border: 2px solid var(--border);
     border-top-color: var(--accent);
     border-radius: 50%;
     animation: spin .7s linear infinite;
@@ -173,18 +132,14 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   .gate-foot {
-    margin-top: 26px;
-    padding-top: 18px;
+    margin-top: 22px;
+    padding-top: 16px;
     border-top: 1px solid var(--border);
     font-size: 11.5px;
     color: var(--faint);
-    line-height: 1.6;
+    line-height: 1.55;
   }
-  .gate-foot code {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-  }
+  .gate-foot code { font-family: var(--mono); font-size: 11px; }
 
   #app { display: none; }
 
