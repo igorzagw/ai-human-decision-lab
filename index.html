@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI-Human Decision Lab — Модель рішення для відбудови громад</title>
+<meta name="description" content="Аналітичний інструмент: штучний інтелект рахує, людина вирішує.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#9878;</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0B1120;
+    --bg-deep:   #070C17;
+    --surface:   #121B2E;
+    --surface-2: #18243C;
+    --border:    #1F2D47;
+    --border-lit:#2C3E5E;
+    --text:      #E6EDF7;
+    --muted:     #8A9BB8;
+    --faint:     #5C6E8C;
+    --accent:    #3B82F6;
+    --amber:     #F5B942;
+    --green:     #34D399;
+    --red:       #F87171;
+    --violet:    #A78BFA;
+    --radius:    14px;
+    --font:      'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --mono:      'JetBrains Mono', ui-monospace, 'Cascadia Code', Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { margin: 0; min-height: 100%; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.55;
+  }
+
+  /* ─────────── Екран входу ─────────── */
+
+  #gate {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Дві м'які світлові плями замість пласкої заливки: дають глибину,
+     але не відволікають від форми. */
+  #gate::before,
+  #gate::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: .35;
+    pointer-events: none;
+  }
+  #gate::before { width: 520px; height: 520px; background: #1E40AF; top: -180px; left: -140px; }
+  #gate::after  { width: 460px; height: 460px; background: #92600E; bottom: -200px; right: -120px; }
+
+  .gate-card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 420px;
+    background: rgba(18, 27, 46, .88);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 36px 32px 30px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, .5);
+  }
+
+  .gate-mark {
+    width: 46px;
+    height: 46px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: linear-gradient(140deg, var(--accent), var(--violet));
+    margin-bottom: 20px;
+  }
+  .gate-mark svg { width: 24px; height: 24px; stroke: #fff; fill: none; stroke-width: 2; }
+
+  .gate-card h1 {
+    font-size: 21px;
+    font-weight: 600;
+    margin: 0 0 6px;
+    letter-spacing: -.02em;
+  }
+
+  .gate-sub {
+    color: var(--muted);
+    font-size: 13.5px;
+    margin: 0 0 26px;
+  }
+
+  .field { margin-bottom: 14px; }
+
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    margin-bottom: 7px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+
+  input[type="password"] {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--bg-deep);
+    border: 1px solid var(--border-lit);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 15px;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  input[type="password"]:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, .18);
+  }
+
+  .btn-primary {
+    width: 100%;
+    padding: 12px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--accent);
+    color: #fff;
+    font-family: var(--font);
+    font-size: 14.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s, transform .08s;
+  }
+  .btn-primary:hover:not(:disabled) { background: #2563EB; }
+  .btn-primary:active:not(:disabled) { transform: translateY(1px); }
+  .btn-primary:disabled { opacity: .55; cursor: progress; }
+
+  .gate-msg {
+    margin-top: 14px;
+    font-size: 13px;
+    min-height: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .gate-msg.error { color: var(--red); }
+  .gate-msg.work  { color: var(--muted); }
+
+  .spinner {
+    width: 13px; height: 13px;
+    border: 2px solid var(--border-lit);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    flex: none;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .gate-foot {
+    margin-top: 26px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    font-size: 11.5px;
+    color: var(--faint);
+    line-height: 1.6;
+  }
+  .gate-foot code {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  #app { display: none; }
+
+  @media (max-width: 480px) {
+    #gate { padding: 16px; }
+    .gate-card { padding: 28px 22px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <form class="gate-card" id="gate-form" autocomplete="off">
+    <div class="gate-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4" y="11" width="16" height="10" rx="2"></rect>
+        <path d="M8 11V7a4 4 0 0 1 8 0v4"></path>
+      </svg>
+    </div>
+
+    <h1>AI-Human Decision&nbsp;Lab</h1>
+    <p class="gate-sub">Модель рішення для відбудови громад. Доступ обмежений.</p>
+
+    <div class="field">
+      <label for="pw">Пароль</label>
+      <input type="password" id="pw" autocomplete="current-password" autofocus required>
+    </div>
+
+    <button type="submit" class="btn-primary" id="gate-btn">Розшифрувати та увійти</button>
+
+    <div class="gate-msg" id="gate-msg" role="status" aria-live="polite"></div>
+
+    <p class="gate-foot">
+      Застосунок зберігається у зашифрованому вигляді (<code>AES-256-GCM</code>, ключ
+      із пароля через <code>PBKDF2-SHA256</code>). Без пароля вміст неможливо прочитати
+      навіть із вихідного коду сторінки.
+    </p>
+  </form>
+</div>
+
+<div id="app"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  const form = document.getElementById('gate-form');
+  const input = document.getElementById('pw');
+  const btn = document.getElementById('gate-btn');
+  const msg = document.getElementById('gate-msg');
+
+  const unb64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+
+  function say(text, kind) {
+    msg.className = 'gate-msg' + (kind ? ' ' + kind : '');
+    msg.textContent = '';
+    if (kind === 'work') {
+      const sp = document.createElement('span');
+      sp.className = 'spinner';
+      msg.appendChild(sp);
+    }
+    msg.appendChild(document.createTextNode(text));
+  }
+
+  async function deriveKey(password, kdf) {
+    const material = await crypto.subtle.importKey(
+      'raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey'],
+    );
+    return crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt: unb64(kdf.salt), iterations: kdf.iterations, hash: kdf.hash },
+      material, { name: 'AES-GCM', length: 256 }, false, ['decrypt'],
+    );
+  }
+
+  /* Монтує розшифрований пакет. innerHTML не виконує <script>,
+     тому розмітка, стилі та код підключаються окремо і саме в цьому порядку. */
+  function mount(bundle) {
+    document.getElementById('gate').remove();
+
+    const style = document.createElement('style');
+    style.textContent = bundle.css;
+    document.head.appendChild(style);
+
+    const app = document.getElementById('app');
+    app.innerHTML = bundle.html;
+    app.style.display = 'block';
+
+    const script = document.createElement('script');
+    script.textContent = bundle.js;
+    document.body.appendChild(script);
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const password = input.value;
+    if (!password) return;
+
+    btn.disabled = true;
+    say('Розшифрування…', 'work');
+
+    try {
+      const res = await fetch('app.enc', { cache: 'no-store' });
+      if (!res.ok) throw new Error('Не знайдено app.enc — застосунок ще не зібрано');
+      const env = await res.json();
+
+      const key = await deriveKey(password, env.kdf);
+
+      let plain;
+      try {
+        plain = await crypto.subtle.decrypt(
+          { name: 'AES-GCM', iv: unb64(env.iv) }, key, unb64(env.data),
+        );
+      } catch {
+        /* GCM має вбудовану перевірку цілісності: хибний ключ не дає «сміття»,
+           а просто не проходить автентифікацію. Тому це і є перевірка пароля. */
+        throw new Error('Хибний пароль');
+      }
+
+      mount(JSON.parse(new TextDecoder().decode(plain)));
+    } catch (err) {
+      say(err.message, 'error');
+      btn.disabled = false;
+      input.select();
+    }
+  });
+})();
+</script>
+</body>
+</html>

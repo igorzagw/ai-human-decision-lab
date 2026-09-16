@@ -1,0 +1,12 @@
+{
+  "name": "ai-human-decision-lab",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Модель рішення для відбудови громад: ШІ рахує, людина вирішує",
+  "scripts": {
+    "build": "node build.mjs",
+    "restore": "node restore.mjs",
+    "serve": "python -m http.server 8080"
+  }
+}
