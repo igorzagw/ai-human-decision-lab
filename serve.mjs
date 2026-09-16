@@ -13,7 +13,12 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const ROOT = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'));
+/* path.resolve обов'язковий: на Windows URL дає шлях із прямими слешами,
+   а resolve повертає зі зворотними — і перевірка startsWith нижче
+   не спрацювала б навіть на коректному файлі. */
+const ROOT = path.resolve(
+  path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')),
+);
 const PORT = Number(process.argv[2]) || 8080;
 
 const TYPES = {
