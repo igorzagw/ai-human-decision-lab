@@ -1,23 +1,24 @@
 @echo off
-chcp 65001 >nul
+rem Zapusk zastosunku. Tilky ASCII: cmd.exe ne chytaye UTF-8 u .cmd faylah,
+rem i kyrylytsya rozpadayetsya na ulamky, yaki vin prymaye za komandy.
 cd /d "%~dp0"
 
 echo.
 echo   AI-Human Decision Lab
-echo   ---------------------
-echo   Застосунок: http://127.0.0.1:8080
-echo   Зупинити:   закрийте це вікно або натисніть Ctrl+C
+echo   =====================
+echo.
+echo   Adresa:  http://127.0.0.1:8080
+echo   Parol:   dyvys u perepystsi z Claude
+echo.
+echo   Ne zakryvay tse vikno - poky vono vidkryte, sayt pratsyuye.
 echo.
 
-rem Браузер відкриваємо з невеликою затримкою, щоб сервер устиг піднятися.
 start "" /min cmd /c "timeout /t 1 >nul & start "" http://127.0.0.1:8080"
 
 node serve.mjs 8080
 
-rem Якщо node завершився з помилкою, вікно не має зникнути миттєво:
-rem інакше причину побачити неможливо.
-if errorlevel 1 (
-  echo.
-  echo   Не вдалося запустити сервер. Перевірте, чи встановлено Node.js.
-  pause
-)
+echo.
+echo   Server zupyneno. Mozhlyvo, ne vstanovleno Node.js
+echo   abo port 8080 vzhe zaynyatyy.
+echo.
+pause
