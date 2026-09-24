@@ -26,6 +26,8 @@ export const KDF_ITERATIONS = 310_000;
 const SRC_FILES = [
   'app.html',
   'app.css',
+  'font-data.js',
+  'pdf.js',
   'scenarios.js',
   'engine.js',
   'llm.js',
@@ -90,7 +92,10 @@ async function main() {
     builtAt: new Date().toISOString(),
     html: sources['app.html'],
     css: sources['app.css'],
-    js: ['scenarios.js', 'engine.js', 'llm.js', 'ui.js'].map((f) => sources[f]).join('\n;\n'),
+    /* Порядок важливий: шрифт і генератор PDF мають бути оголошені до ui.js,
+       який ними користується. */
+    js: ['font-data.js', 'pdf.js', 'scenarios.js', 'engine.js', 'llm.js', 'ui.js']
+      .map((f) => sources[f]).join('\n;\n'),
   };
 
   const password = await askPassword('Пароль для застосунку: ');
