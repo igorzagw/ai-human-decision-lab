@@ -2,9 +2,11 @@
 /**
  * Локальний статичний сервер для перегляду застосунку.
  *
- * Потрібен, бо index.html тягне app.enc через fetch, а з file:// браузер
- * такий запит блокує. Python-версія (`python -m http.server`) теж працює,
- * але вона однопотокова і рве повторні з'єднання під час перезавантажень.
+ * Потрібен не для самих файлів — браузер відкриє index.html і з диска.
+ * Потрібен через localStorage: на file:// походження сторінки «null», і
+ * чернетки та архів рішень або не зберігаються, або зберігаються в спільне
+ * для всіх локальних файлів сховище. Під http://127.0.0.1 сторінка
+ * поводиться так само, як на GitHub Pages.
  *
  *   node serve.mjs          -> http://127.0.0.1:8080
  *   node serve.mjs 3000     -> інший порт
@@ -23,7 +25,6 @@ const PORT = Number(process.argv[2]) || 8080;
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
-  '.enc':  'application/json; charset=utf-8',
   '.js':   'text/javascript; charset=utf-8',
   '.css':  'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8',

@@ -8,7 +8,6 @@ echo   AI-Human Decision Lab
 echo   =====================
 echo.
 echo   Adresa:  http://127.0.0.1:8080
-echo   Parol:   dyvys u perepystsi z Claude
 echo.
 echo   Ne zakryvay tse vikno - poky vono vidkryte, sayt pratsyuye.
 echo.

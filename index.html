@@ -5,12 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AI-Human Decision Lab — Модель рішення для відбудови громад</title>
 <meta name="description" content="Аналітичний інструмент: штучний інтелект рахує, людина вирішує.">
-<meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#9878;</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+  /* Змінні кольорів і базові стилі лишаються тут, а не в app.css: сторінка
+     мусить мати тло й шрифт ще до того, як зовнішній файл завантажиться.
+     Інакше на поганому зв'язку перший кадр буде чорним текстом на білому. */
   :root {
     --bg:        #0B1120;
     --bg-deep:   #070C17;
@@ -43,258 +45,153 @@
     line-height: 1.6;
   }
 
-  /* ─────────── Екран входу ─────────── */
-
-  #gate {
-    min-height: 100vh;
-    display: grid;
-    place-items: center;
-    padding: 24px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  /* Дві м'які світлові плями замість пласкої заливки: дають глибину,
-     але не відволікають від форми. */
-  #gate::before,
-  #gate::after {
-    content: '';
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(130px);
-    opacity: .3;
-    pointer-events: none;
-  }
-  #gate::before { width: 540px; height: 540px; background: #1E40AF; top: -200px; left: -160px; }
-  #gate::after  { width: 460px; height: 460px; background: #92600E; bottom: -210px; right: -130px; }
-
-  .gate-card {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    max-width: 430px;
-    background: rgba(18, 27, 46, .9);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 40px 36px 32px;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, .45);
-  }
-
-  .gate-mark {
-    width: 46px;
-    height: 46px;
-    display: grid;
-    place-items: center;
-    border-radius: 13px;
-    background: linear-gradient(140deg, var(--accent), var(--violet));
-    margin-bottom: 24px;
-  }
-  .gate-mark svg { width: 23px; height: 23px; stroke: #fff; fill: none; stroke-width: 2; }
-
-  .gate-card h1 { font-size: 21px; font-weight: 600; margin: 0 0 8px; letter-spacing: -.02em; }
-  .gate-sub { color: var(--muted); font-size: 13.5px; margin: 0 0 30px; }
-
-  .field { margin-bottom: 18px; }
-  .field label {
-    display: block;
-    font-size: 11.5px;
-    font-weight: 500;
-    color: var(--muted);
-    margin-bottom: 9px;
-    text-transform: uppercase;
-    letter-spacing: .06em;
-  }
-
-  input[type="password"] {
-    width: 100%;
-    padding: 13px 15px;
-    background: var(--bg-deep);
-    border: 1px solid var(--border-lit);
-    border-radius: 11px;
-    color: var(--text);
-    font-family: var(--font);
-    font-size: 15px;
-    outline: none;
-    transition: border-color .15s, box-shadow .15s;
-  }
-  input[type="password"]:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, .16);
-  }
-
-  .btn-primary {
-    width: 100%;
-    padding: 13px;
-    border: 0;
-    border-radius: 11px;
-    background: var(--accent);
-    color: #fff;
-    font-family: var(--font);
-    font-size: 14.5px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background .15s;
-  }
-  .btn-primary:hover:not(:disabled) { background: #2563EB; }
-  .btn-primary:disabled { opacity: .55; cursor: progress; }
-
-  .gate-msg {
-    margin-top: 16px;
-    font-size: 13px;
-    min-height: 20px;
-    display: flex;
-    align-items: center;
-    gap: 9px;
-  }
-  .gate-msg.error { color: var(--red); }
-  .gate-msg.work  { color: var(--muted); }
-
-  .spinner {
-    width: 13px; height: 13px;
-    border: 2px solid var(--border-lit);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin .7s linear infinite;
-    flex: none;
-  }
+  /* Обертання спінера. Живе саме тут, бо анімацію використовують і
+     app.css (.spin), і екран налаштувань: якби @keyframes лишився в
+     старому екрані входу, спінер просто завмер би. */
   @keyframes spin { to { transform: rotate(360deg); } }
-
-  .gate-foot {
-    margin-top: 30px;
-    padding-top: 22px;
-    border-top: 1px solid var(--border);
-    font-size: 11.5px;
-    color: var(--faint);
-    line-height: 1.7;
-  }
-  .gate-foot code { font-family: var(--mono); font-size: 11px; color: var(--muted); }
-
-  #app { display: none; }
-
-  @media (max-width: 480px) {
-    #gate { padding: 16px; }
-    .gate-card { padding: 28px 22px 24px; }
-  }
 </style>
+<link rel="stylesheet" href="src/app.css">
 </head>
 <body>
 
-<div id="gate">
-  <form class="gate-card" id="gate-form" autocomplete="off">
-    <div class="gate-mark" aria-hidden="true">
-      <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="4" y="11" width="16" height="10" rx="2"></rect>
-        <path d="M8 11V7a4 4 0 0 1 8 0v4"></path>
-      </svg>
+<div id="app">
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3v18M5 7h14M7 7l-3 7h6zM17 7l-3 7h6z"></path>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand-title">AI-Human Decision Lab</span>
+        <span class="brand-sub">Модель рішення для відбудови громад</span>
+      </div>
     </div>
 
-    <h1>AI-Human Decision&nbsp;Lab</h1>
-    <p class="gate-sub">Модель рішення для відбудови громад. Доступ обмежений.</p>
-
-    <div class="field">
-      <label for="pw">Пароль</label>
-      <input type="password" id="pw" autocomplete="current-password" autofocus required>
+    <div class="topbar-actions">
+      <span class="llm-badge" id="llm-badge" title="Стан мовної моделі"></span>
+      <button class="btn-ghost" id="btn-archive" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" width="15" height="15">
+          <path d="M3 7h18v4H3zM5 11v9h14v-9M10 15h4"></path>
+        </svg>
+        Архів<span class="archive-count"></span>
+      </button>
+      <button class="btn-ghost" id="btn-settings" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" width="15" height="15">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6h.09A1.65 1.65 0 0 0 10 3.09V3a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        Налаштування
+      </button>
     </div>
+  </div>
 
-    <button type="submit" class="btn-primary" id="gate-btn">Розшифрувати та увійти</button>
+  <nav class="stepper" id="stepper" aria-label="Етапи роботи"></nav>
+</header>
 
-    <div class="gate-msg" id="gate-msg" role="status" aria-live="polite"></div>
+<main class="main" id="main">
 
-    <p class="gate-foot">
-      Застосунок зберігається у зашифрованому вигляді (<code>AES-256-GCM</code>, ключ
-      із пароля через <code>PBKDF2-SHA256</code>). Без пароля вміст неможливо прочитати
-      навіть із вихідного коду сторінки.
-    </p>
-  </form>
+  <!-- ЕТАП 1 — людина дає дані -->
+  <section class="stage" id="stage-1" data-stage="1">
+    <div class="stage-head">
+      <span class="stage-num">Етап 1</span>
+      <h2>Людина подає дані</h2>
+      <p>Оберіть задачу й заповніть таблицю.</p>
+    </div>
+    <div id="scenario-picker" class="scenario-grid"></div>
+    <div id="data-form" hidden></div>
+  </section>
+
+  <!-- ЕТАП 2 — машина рахує -->
+  <section class="stage" id="stage-2" data-stage="2" hidden>
+    <div class="stage-head">
+      <span class="stage-num">Етап 2</span>
+      <h2>Машина рахує</h2>
+      <p>Три оцінки — бал — три варіанти дій. Будь-який бал можна розкрити.</p>
+    </div>
+    <div id="analysis"></div>
+  </section>
+
+  <!-- ЕТАП 3 — людина перевіряє -->
+  <section class="stage" id="stage-3" data-stage="3" hidden>
+    <div class="stage-head">
+      <span class="stage-num">Етап 3</span>
+      <h2>Людина перевіряє</h2>
+      <p>Машина не знає про справедливість. Не згодні з важливістю — змініть її.</p>
+    </div>
+    <div id="review"></div>
+  </section>
+
+  <!-- ЕТАП 4 — рішення -->
+  <section class="stage" id="stage-4" data-stage="4" hidden>
+    <div class="stage-head">
+      <span class="stage-num">Етап 4</span>
+      <h2>Остаточне рішення</h2>
+      <p>Вирішує людина. Вибір і причина йдуть у протокол.</p>
+    </div>
+    <div id="decision"></div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <span>Розрахунки виконуються у вашому браузері.</span>
+</footer>
+
+<!-- Налаштування -->
+<div class="modal-back" id="settings-modal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div class="modal-head">
+      <h3 id="settings-title">Налаштування</h3>
+      <button class="btn-icon" id="btn-close-settings" type="button" aria-label="Закрити">&times;</button>
+    </div>
+    <div class="modal-body" id="settings-body"></div>
+  </div>
 </div>
 
-<div id="app"></div>
+<!-- Архів зафіксованих рішень -->
+<div class="modal-back" id="archive-modal" hidden>
+  <div class="modal modal-wide" role="dialog" aria-modal="true" aria-labelledby="archive-title">
+    <div class="modal-head">
+      <h3 id="archive-title">Архів рішень</h3>
+      <button class="btn-icon" id="btn-close-archive" type="button" aria-label="Закрити">&times;</button>
+    </div>
+    <div class="modal-body" id="archive-body"></div>
+  </div>
+</div>
 
-<script>
-(() => {
-  'use strict';
+<!-- Перегляд того, що піде в мережу -->
+<div class="modal-back" id="digest-modal" hidden>
+  <div class="modal modal-wide" role="dialog" aria-modal="true" aria-labelledby="digest-title">
+    <div class="modal-head">
+      <h3 id="digest-title">Що буде надіслано в Groq</h3>
+      <button class="btn-icon" id="btn-close-digest" type="button" aria-label="Закрити">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-note">Повний текст запиту. Більше нічого не передається.</p>
+      <pre class="digest" id="digest-text"></pre>
+    </div>
+  </div>
+</div>
 
-  const form = document.getElementById('gate-form');
-  const input = document.getElementById('pw');
-  const btn = document.getElementById('gate-btn');
-  const msg = document.getElementById('gate-msg');
+</div><!-- #app -->
 
-  const unb64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+<!-- Порядок підключення має значення: шрифт і генератор PDF мусять бути
+     оголошені раніше, ніж ui.js ними користується, а предметна модель
+     (scenarios.js) — раніше за ядро, яке на неї спирається. Скрипти стоять
+     у кінці body, тож до запуску init() розмітка вже існує. -->
+<script src="src/font-data.js"></script>
+<script src="src/pdf.js"></script>
+<script src="src/scenarios.js"></script>
+<script src="src/engine.js"></script>
+<script src="src/io.js"></script>
+<script src="src/llm.js"></script>
+<script src="src/ui.js"></script>
 
-  function say(text, kind) {
-    msg.className = 'gate-msg' + (kind ? ' ' + kind : '');
-    msg.textContent = '';
-    if (kind === 'work') {
-      const sp = document.createElement('span');
-      sp.className = 'spinner';
-      msg.appendChild(sp);
-    }
-    msg.appendChild(document.createTextNode(text));
-  }
-
-  async function deriveKey(password, kdf) {
-    const material = await crypto.subtle.importKey(
-      'raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey'],
-    );
-    return crypto.subtle.deriveKey(
-      { name: 'PBKDF2', salt: unb64(kdf.salt), iterations: kdf.iterations, hash: kdf.hash },
-      material, { name: 'AES-GCM', length: 256 }, false, ['decrypt'],
-    );
-  }
-
-  /* Монтує розшифрований пакет. innerHTML не виконує <script>,
-     тому розмітка, стилі та код підключаються окремо і саме в цьому порядку. */
-  function mount(bundle) {
-    document.getElementById('gate').remove();
-
-    const style = document.createElement('style');
-    style.textContent = bundle.css;
-    document.head.appendChild(style);
-
-    const app = document.getElementById('app');
-    app.innerHTML = bundle.html;
-    app.style.display = 'block';
-
-    const script = document.createElement('script');
-    script.textContent = bundle.js;
-    document.body.appendChild(script);
-  }
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const password = input.value;
-    if (!password) return;
-
-    btn.disabled = true;
-    say('Розшифрування…', 'work');
-
-    try {
-      const res = await fetch('app.enc', { cache: 'no-store' });
-      if (!res.ok) throw new Error('Не знайдено app.enc — застосунок ще не зібрано');
-      const env = await res.json();
-
-      const key = await deriveKey(password, env.kdf);
-
-      let plain;
-      try {
-        plain = await crypto.subtle.decrypt(
-          { name: 'AES-GCM', iv: unb64(env.iv) }, key, unb64(env.data),
-        );
-      } catch {
-        /* GCM має вбудовану перевірку цілісності: хибний ключ не дає «сміття»,
-           а просто не проходить автентифікацію. Тому це і є перевірка пароля. */
-        throw new Error('Хибний пароль');
-      }
-
-      mount(JSON.parse(new TextDecoder().decode(plain)));
-    } catch (err) {
-      say(err.message, 'error');
-      btn.disabled = false;
-      input.select();
-    }
-  });
-})();
-</script>
 </body>
 </html>
